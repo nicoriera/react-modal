@@ -1,7 +1,5 @@
 {
-  "extends": "../../wealth-health-react/tsconfig.app.json",
   "compilerOptions": {
-    "types": ["jest", "node"],
     "outDir": "dist",
     "declaration": true,
     "declarationDir": "dist",
@@ -12,7 +10,9 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": false,
+    "types": ["jest", "node"]
   },
   "include": ["src"]
 }
