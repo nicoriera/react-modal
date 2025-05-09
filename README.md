@@ -41,6 +41,8 @@ function App() {
         escapeClose={true} // Close on Escape key (default: true)
         clickClose={true} // Close on overlay click (default: true)
         showClose={true} // Show the 'X' close button (default: true)
+        overlayClassName="my-overlay" // Custom classes for overlay
+        modalClassName="my-modal" // Custom classes for modal container
       >
         <h2 id="modal-title">Modal Title</h2>
         <p>This is the modal content.</p>
@@ -56,14 +58,16 @@ export default App;
 
 ## Props
 
-| Prop          | Type      | Default | Description                                                             |
-| ------------- | --------- | ------- | ----------------------------------------------------------------------- |
-| `isOpen`      | boolean   | —       | Controls if the modal is visible. Required.                             |
-| `onClose`     | function  | —       | Callback executed when the modal requests to be closed. Required.       |
-| `children`    | ReactNode | —       | Content to display inside the modal. Required.                          |
-| `escapeClose` | boolean   | true    | If true, closes the modal on Escape key press.                          |
-| `clickClose`  | boolean   | true    | If true, closes the modal when clicking the overlay.                    |
-| `showClose`   | boolean   | true    | If true, displays the default 'X' close button in the top-right corner. |
+| Prop               | Type      | Default | Description                                                             |
+| ------------------ | --------- | ------- | ----------------------------------------------------------------------- |
+| `isOpen`           | boolean   | —       | Controls if the modal is visible. Required.                             |
+| `onClose`          | function  | —       | Callback executed when the modal requests to be closed. Required.       |
+| `children`         | ReactNode | —       | Content to display inside the modal. Required.                          |
+| `escapeClose`      | boolean   | true    | If true, closes the modal on Escape key press.                          |
+| `clickClose`       | boolean   | true    | If true, closes the modal when clicking the overlay.                    |
+| `showClose`        | boolean   | true    | If true, displays the default 'X' close button in the top-right corner. |
+| `overlayClassName` | string    | ""      | Additional classes for the overlay element.                             |
+| `modalClassName`   | string    | ""      | Additional classes for the modal container.                             |
 
 > **Tip:** Any element inside the modal with the attribute `data-modal-close` will close the modal when clicked.
 
