@@ -1,0 +1,95 @@
+import React from "react";
+import * as ModalStories from "./stories/Modal.stories";
+import { Meta, Primary, Controls, Canvas } from "@storybook/blocks";
+import ReactModalConverted from "./Modal";
+
+<Meta of={ModalStories} />
+
+# Modal
+
+The `Modal` component displays content in a portal with an overlay, ensuring user focus and preventing interaction with background content.
+
+## When to use
+
+- Display dialogs, confirmations, or forms.
+- Require user attention without navigating away.
+
+## Anatomy
+
+- **Overlay**: Fullscreen backdrop that dims the page.
+- **Container**: Centered panel with white background, rounded corners, and shadow.
+- **Close Button**: Icon button to dismiss the modal.
+- **Content**: Custom header, body, and optional footer areas.
+
+## Preview
+
+<Primary />
+
+## Usage Example
+
+```jsx
+import React, { useState } from "react";
+import ReactModalConverted from "@nicoriera/react-modal-converted";
+
+function Example() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button className="btn-primary" onClick={() => setOpen(true)}>
+        Open Modal
+      </button>
+
+      <ReactModalConverted
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        overlayClassName="bg-black bg-opacity-60"
+        modalClassName="max-w-md p-6">
+        <h2 className="text-xl font-semibold mb-4">Modal Title</h2>
+        <p className="mb-4">This is the modal content area.</p>
+        <button data-modal-close className="btn-secondary">
+          Close
+        </button>
+      </ReactModalConverted>
+    </>
+  );
+}
+```
+
+## Props
+
+<Controls />
+
+## Variants
+
+### Without Close Button
+
+<Canvas of={ModalStories.WithoutCloseButton} />
+
+### No Overlay Close
+
+<Canvas of={ModalStories.NoOverlayClose} />
+
+### No Escape Close
+
+<Canvas of={ModalStories.NoEscapeClose} />
+
+### Custom Styling
+
+<Canvas of={ModalStories.CustomStyling} />
+
+## Accessibility
+
+- Uses `role="dialog"` and `aria-modal="true"` by default.
+- Focuses the close button on open and restores background scroll on close.
+- Supports closing via Escape key, overlay click, and any element with `data-modal-close`.
+
+## Theming & Styling
+
+Customize the modal by passing Tailwind CSS classes to `overlayClassName` and `modalClassName`, or by adding your own CSS selectors.
+
+## Best Practices
+
+1. Keep content concise and focused.
+2. Provide clear titles and close controls.
+3. Prevent background scrolling when open.
+4. Ensure keyboard accessibility and focus management.

@@ -112,14 +112,14 @@ const ReactModalConverted: React.FC<ReactModalConvertedProps> = ({
   return createPortal(
     // Overlay ("blocker")
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-300 ease-in-out ${overlayClassName}`}
+      className={`fixed inset-0 z-9999 flex items-center justify-center bg-black/50 transition-opacity duration-300 ease-in-out ${overlayClassName}`}
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true">
       {/* Modal Container */}
       <div
         ref={modalRef}
-        className={`relative bg-white rounded-lg shadow-xl p-6 m-4 max-w-sm w-full transform transition-all duration-300 ease-in-out scale-95 opacity-0 animate-fade-in-scale ${modalClassName}`}
+        className={`relative bg-white rounded-lg shadow-xl p-6 m-4 max-w-sm w-full transform transition-all duration-300 ease-in-out scale-95  animate-fade-in-scale ${modalClassName}`}
         onClick={(e) => e.stopPropagation()} // Prevent overlay click when clicking inside
       >
         {/* Close Button (rendered based on showClose) */}
