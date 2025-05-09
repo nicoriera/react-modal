@@ -1,106 +1,139 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 
 import "@testing-library/jest-dom";
+import React from "react";
 import ReactModalConverted from "../Modal";
 
-describe("ReactModalConverted", () => {
+// Define partial props type for ease of setup
+type Props = Partial<React.ComponentProps<typeof ReactModalConverted>>;
+// Default modal content used across tests
+const modalContent = <div>Contenu de la modale</div>;
+
+/**
+ * Renders the modal with default props and returns the onClose mock.
+ */
+const setup = (props: Props = {}, children = modalContent) => {
   const onClose = jest.fn();
-  const modalContent = <div>Contenu de la modale</div>;
+  render(
+    <ReactModalConverted onClose={onClose} isOpen={false} {...props}>
+      {children}
+    </ReactModalConverted>
+  );
+  return { onClose };
+};
 
+describe("ReactModalConverted", () => {
   afterEach(() => {
+    cleanup();
     jest.clearAllMocks();
-    // Nettoyer le DOM du portal
-    const portal = document.getElementById("react-modal-converted-root");
-    if (portal) portal.remove();
   });
 
-  it("n'affiche rien si isOpen est false", () => {
-    render(
-      <ReactModalConverted isOpen={false} onClose={onClose}>
-        {modalContent}
-      </ReactModalConverted>
-    );
-    expect(screen.queryByText("Contenu de la modale")).not.toBeInTheDocument();
+  describe("Rendering", () => {
+    it("does not render when isOpen is false", () => {
+      setup();
+      expect(
+        screen.queryByText("Contenu de la modale")
+      ).not.toBeInTheDocument();
+    });
+
+    it("renders when isOpen is true", () => {
+      setup({ isOpen: true });
+      expect(screen.getByText("Contenu de la modale")).toBeInTheDocument();
+    });
   });
 
-  it("affiche la modale si isOpen est true", () => {
-    render(
-      <ReactModalConverted isOpen={true} onClose={onClose}>
-        {modalContent}
-      </ReactModalConverted>
-    );
-    expect(screen.getByText("Contenu de la modale")).toBeInTheDocument();
+  describe("Closing behavior", () => {
+    describe("Overlay click", () => {
+      it("closes when clickClose=true", () => {
+        const { onClose } = setup({ isOpen: true, clickClose: true });
+        fireEvent.click(screen.getByRole("dialog"));
+        expect(onClose).toHaveBeenCalled();
+      });
+
+      it("does not close when clickClose=false", () => {
+        const { onClose } = setup({ isOpen: true, clickClose: false });
+        fireEvent.click(screen.getByRole("dialog"));
+        expect(onClose).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("Close button", () => {
+      it("closes when showClose=true", () => {
+        const { onClose } = setup({ isOpen: true, showClose: true });
+        fireEvent.click(screen.getByLabelText(/Close/i));
+        expect(onClose).toHaveBeenCalled();
+      });
+
+      it("does not render the close button when showClose=false", () => {
+        setup({ isOpen: true, showClose: false });
+        expect(screen.queryByLabelText(/Close/i)).toBeNull();
+      });
+    });
+
+    describe("Keyboard interaction", () => {
+      it("closes on Escape when escapeClose=true", () => {
+        const { onClose } = setup({ isOpen: true, escapeClose: true });
+        fireEvent.keyDown(document, { key: "Escape", code: "Escape" });
+        expect(onClose).toHaveBeenCalled();
+      });
+
+      it("does not close on Escape when escapeClose=false", () => {
+        const { onClose } = setup({ isOpen: true, escapeClose: false });
+        fireEvent.keyDown(document, { key: "Escape", code: "Escape" });
+        expect(onClose).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("Data attribute close", () => {
+      it("closes when clicking element with data-modal-close", () => {
+        const { onClose } = setup(
+          { isOpen: true },
+          <button data-modal-close>Fermer</button>
+        );
+        fireEvent.click(screen.getByText("Fermer"));
+        expect(onClose).toHaveBeenCalled();
+      });
+    });
   });
 
-  it("ferme la modale quand on clique sur l'overlay si clickClose=true", () => {
-    render(
-      <ReactModalConverted isOpen={true} onClose={onClose} clickClose={true}>
-        {modalContent}
-      </ReactModalConverted>
-    );
-    fireEvent.click(screen.getByRole("dialog"));
-    expect(onClose).toHaveBeenCalled();
+  describe("Accessibility", () => {
+    it("has basic aria attributes", () => {
+      setup({ isOpen: true });
+      expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "true");
+    });
   });
 
-  it("ne ferme pas la modale quand on clique sur l'overlay si clickClose=false", () => {
-    render(
-      <ReactModalConverted isOpen={true} onClose={onClose} clickClose={false}>
-        {modalContent}
-      </ReactModalConverted>
-    );
-    fireEvent.click(screen.getByRole("dialog"));
-    expect(onClose).not.toHaveBeenCalled();
+  describe("Styling", () => {
+    it("applies custom classes to overlay and modal", () => {
+      setup({
+        isOpen: true,
+        overlayClassName: "my-overlay",
+        modalClassName: "my-modal",
+      });
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toHaveClass("my-overlay");
+      const contentElem = screen.getByText("Contenu de la modale");
+      const wrapperDiv = contentElem.parentElement!;
+      const modalContainer = wrapperDiv.parentElement!;
+      expect(modalContainer).toHaveClass("my-modal");
+    });
   });
 
-  it("ferme la modale quand on clique sur le bouton X", () => {
-    render(
-      <ReactModalConverted isOpen={true} onClose={onClose} showClose={true}>
-        {modalContent}
-      </ReactModalConverted>
-    );
-    const closeButton = screen.getByLabelText(/close/i);
-    fireEvent.click(closeButton);
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it("ferme la modale quand on appuie sur Echap si escapeClose=true", () => {
-    render(
-      <ReactModalConverted isOpen={true} onClose={onClose} escapeClose={true}>
-        {modalContent}
-      </ReactModalConverted>
-    );
-    fireEvent.keyDown(document, { key: "Escape", code: "Escape" });
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it("ne ferme pas la modale quand on appuie sur Echap si escapeClose=false", () => {
-    render(
-      <ReactModalConverted isOpen={true} onClose={onClose} escapeClose={false}>
-        {modalContent}
-      </ReactModalConverted>
-    );
-    fireEvent.keyDown(document, { key: "Escape", code: "Escape" });
-    expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it("ferme la modale quand on clique sur un bouton avec data-modal-close", () => {
-    render(
-      <ReactModalConverted isOpen={true} onClose={onClose}>
-        <button data-modal-close>Fermer</button>
-      </ReactModalConverted>
-    );
-    const closeBtn = screen.getByText("Fermer");
-    fireEvent.click(closeBtn);
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it("a les attributs d'accessibilité de base", () => {
-    render(
-      <ReactModalConverted isOpen={true} onClose={onClose}>
-        {modalContent}
-      </ReactModalConverted>
-    );
-    const dialog = screen.getByRole("dialog");
-    expect(dialog).toHaveAttribute("aria-modal", "true");
+  describe("Side effects", () => {
+    it("restores body overflow style after close", () => {
+      const onClose = jest.fn();
+      const { rerender } = render(
+        <ReactModalConverted isOpen={true} onClose={onClose}>
+          {modalContent}
+        </ReactModalConverted>
+      );
+      expect(document.body.style.overflow).toBe("hidden");
+      rerender(
+        <ReactModalConverted isOpen={false} onClose={onClose}>
+          {modalContent}
+        </ReactModalConverted>
+      );
+      expect(document.body.style.overflow).toBe("auto");
+    });
   });
 });

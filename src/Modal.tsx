@@ -8,6 +8,8 @@ interface ReactModalConvertedProps {
   escapeClose?: boolean; // Close on Escape key (default: true)
   clickClose?: boolean; // Close on overlay click (default: true)
   showClose?: boolean; // Show the 'X' close button (default: true)
+  overlayClassName?: string; // Additional classes for overlay
+  modalClassName?: string; // Additional classes for modal container
   // We can add more props later based on jquery-modal options if needed
 }
 
@@ -18,29 +20,34 @@ const ReactModalConverted: React.FC<ReactModalConvertedProps> = ({
   escapeClose = true,
   clickClose = true,
   showClose = true,
+  overlayClassName = "",
+  modalClassName = "",
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Focus automatically the close button when modal opens
+  useEffect(() => {
+    if (isOpen && closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, [isOpen]);
 
   // Handle Escape key press
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleEscape = (event: KeyboardEvent) => {
       if (escapeClose && event.key === "Escape") {
         onClose();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-      // Simple overflow hidden, jquery-modal might do more complex calculations
-      document.body.style.overflow = "hidden";
-    } else {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "auto";
-    }
+    document.addEventListener("keydown", handleEscape);
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      // Ensure scroll is restored if component unmounts while open
       document.body.style.overflow = "auto";
     };
   }, [isOpen, onClose, escapeClose]);
@@ -74,6 +81,16 @@ const ReactModalConverted: React.FC<ReactModalConvertedProps> = ({
     };
   }, [isOpen, onClose]);
 
+  // Clean up portal root on unmount
+  useEffect(() => {
+    return () => {
+      const portalRoot = document.getElementById("react-modal-converted-root");
+      if (portalRoot) {
+        portalRoot.remove();
+      }
+    };
+  }, []);
+
   if (!isOpen) {
     return null;
   }
@@ -95,19 +112,20 @@ const ReactModalConverted: React.FC<ReactModalConvertedProps> = ({
   return createPortal(
     // Overlay ("blocker")
     <div
-      className="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-center justify-center p-4"
+      className={`fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-center justify-center p-4 ${overlayClassName}`}
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true">
       {/* Modal Container */}
       <div
         ref={modalRef}
-        className="relative bg-white p-6 rounded shadow-lg max-w-lg w-full overflow-y-auto max-h-[90vh]" // Basic styling
+        className={`relative bg-white p-6 rounded shadow-lg max-w-lg w-full overflow-y-auto max-h-[90vh] ${modalClassName}`}
         onClick={(e) => e.stopPropagation()} // Prevent overlay click when clicking inside
       >
         {/* Close Button (rendered based on showClose) */}
         {showClose && (
           <button
+            ref={closeButtonRef}
             onClick={onClose}
             className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
             aria-label="Close"
