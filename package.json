@@ -1,6 +1,6 @@
 {
   "name": "@nicoriera/react-modal-converted",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A functional, accessible, and customizable modal component for React, inspired by jquery-modal.",
   "author": "Nicolas Riera",
   "license": "MIT",
